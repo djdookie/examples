@@ -50,11 +50,13 @@ if __name__ == '__main__':
     torch.manual_seed(args.seed)
 
     model = Net()
+    device = torch.device("cuda")
+    model = Net().to(device)
     model.share_memory() # gradients are allocated lazily, so they are not shared here
 
     processes = []
     for rank in range(args.num_processes):
-        p = mp.Process(target=train, args=(rank, args, model))
+        p = mp.Process(target=train, args=(rank, args, model, device))
         # We first train the model across `num_processes` processes
         p.start()
         processes.append(p)
@@ -62,6 +64,6 @@ if __name__ == '__main__':
         p.join()
 
     # Once training is complete, we can test the model
-    test(args, model)
+    test(args, model, device)
 
 
